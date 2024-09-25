@@ -1,6 +1,7 @@
 --taken mostly from https://github.com/avaldebe/AQmon/blob/master/lua_modules/bme280.lua
 
---NEW
+
+--NEW
 -- logging to a file on the SD card and to data flash
 local file_name = "LOG.csv"
 local file
@@ -194,7 +195,8 @@ local function write_to_file()
   file:flush()
 
 end
-
+
+
 -- not needed?
 --[[
 local function write_to_dataflash()
@@ -224,7 +226,7 @@ function update()
   write_to_file()
 
   -- write to a new log in the data flash log
-  write_to_dataflash()
+  --write_to_dataflash()
 
   return update, 1000 -- reschedules the loop
 end
