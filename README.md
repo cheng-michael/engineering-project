@@ -1,4 +1,4 @@
-# Drone Environmental Sensor Integration: Logging Temperature, Pressure, and Humidity Data
+# Drone Sensor Integration: Logging Temperature, Pressure, and Humidity Data
 
 ## Project Overview
 This project aims to integrate a Bosch BME280 and Adafruit SHT45 sensor into a drone to measure temperature, pressure, and humidity during flight. The data is logged in real time to an SD card in CSV format and to the flight log, providing insights into environmental conditions throughout ground and flight testing.
