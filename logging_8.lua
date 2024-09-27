@@ -76,7 +76,7 @@ local function write_to_file(temp, pressure, humidity)
     if not file then
         error("Could not open file")
     end
-    file:write(string.format("%d,%.2f,%.2f,%.2f\n", millis(), temp, pressure, humidity))
+    file:write(string.format("%s,%.2f,%.2f,%.2f\n", tostring(millis()), temp, pressure, humidity))
     file:flush()
 end
 
