@@ -1,7 +1,6 @@
 --taken mostly from https://github.com/avaldebe/AQmon/blob/master/lua_modules/bme280.lua
 
 
---NEW
 -- logging to a file on the SD card and to data flash
 local file_name = "LOG.csv"
 local file
@@ -12,8 +11,63 @@ local temperature = 2
 local humidity = 3
 local calibcoeff = 4
 local interesting_data = {}
---NEW
 
+local function write_to_file()
+
+  if not file then
+    error("Could not open file")
+  end
+
+  -- write data
+  -- separate with comas and add a carriage return
+  file:write(tostring(millis()) .. ", " .. table.concat(data,", ") .. "\n")
+
+  -- make sure file is upto date
+  file:flush()
+
+end
+
+local function write_to_dataflash()
+
+  -- care must be taken when selecting a name, must be less than four characters and not clash with an existing log type
+  -- format characters specify the type of variable to be logged, see AP_Logger/README.md
+  -- https://github.com/ArduPilot/ardupilot/tree/master/libraries/AP_Logger
+  -- not all format types are supported by scripting only: i, L, e, f, n, M, B, I, E, and N
+  -- lua automatically adds a timestamp in micro seconds
+  logger:write('SCR1','press,temp,hum,cc','ffff',interesting_data[pressure],interesting_data[temperature],interesting_data[humidity],interesting_data[calibcoeff])
+
+  -- it is also possible to give units and multipliers
+  logger:write('SCR2','press,temp,hum,cc','fff','Pa,°C,%,coef','---',interesting_data[pressure],interesting_data[temperature],interesting_data[humidity],interesting_data[calibcoeff])
+
+end
+
+function update()
+
+  -- get data
+  data[pressure] = p
+  data[temperature] = t
+  data[humidity] = h 
+  data[calibcoeff] = c
+  -- write to then new file the SD card
+  write_to_file()
+
+  -- write to a new log in the data flash log
+  write_to_dataflash()
+
+  return update, 1000 -- reschedules the loop
+end
+
+-- make a file
+file = io.open(file_name, "a")
+if not file then
+  error("Could not make file")
+end
+
+-- write the CSV header
+file:write('time(ms), pressure(Pa), temperature(°C), humidity(%), c?\n')
+file:flush()
+
+return update, 10000
 
 local sensor_addr = 0x76 --the sensor has two address; 0x76 and 0x77
 local T,P,H={},{},{} --calib coefficient
@@ -180,68 +234,16 @@ return read, 8000
 end
 
 
---NEW
-local function write_to_file()
 
-  if not file then
-    error("Could not open file")
-  end
-
-  -- write data
-  -- separate with comas and add a carriage return
-  file:write(tostring(millis()) .. ", " .. table.concat(data,", ") .. "\n")
-
-  -- make sure file is upto date
-  file:flush()
-
-end
 
 
 -- not needed?
 --[[
-local function write_to_dataflash()
 
-  -- care must be taken when selecting a name, must be less than four characters and not clash with an existing log type
-  -- format characters specify the type of variable to be logged, see AP_Logger/README.md
-  -- https://github.com/ArduPilot/ardupilot/tree/master/libraries/AP_Logger
-  -- not all format types are supported by scripting only: i, L, e, f, n, M, B, I, E, and N
-  -- lua automatically adds a timestamp in micro seconds
-  logger:write('SCR1','roll(deg),pitch(deg),yaw(deg)','fff',interesting_data[roll],interesting_data[pitch],interesting_data[yaw])
-
-  -- it is also possible to give units and multipliers
-  logger:write('SCR2','roll,pitch,yaw','fff','ddd','---',interesting_data[roll],interesting_data[pitch],interesting_data[yaw])
-
-end
 --]]
 
 
-function update()
 
-  -- get data
-  data[pp] = p
-  data[tt] = t
-  data[hh] = h 
-  data[cc] = c
-  -- write to then new file the SD card
-  write_to_file()
-
-  -- write to a new log in the data flash log
-  --write_to_dataflash()
-
-  return update, 1000 -- reschedules the loop
-end
-
--- make a file
-file = io.open(file_name, "a")
-if not file then
-  error("Could not make file")
-end
-
--- write the CSV header
-file:write('time(ms), pressure(Pa), temperature(°C), humidity(%), c?\n')
-file:flush()
-
-return update, 10000
 --NEW
 
 
